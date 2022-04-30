@@ -38,8 +38,19 @@ const run=async()=>{
             res.send(inventoryItem)
         });
         app.patch('/inventory/:id',async(req,res)=>{
-            const quantity=req.body.quantity-1
+            const isReduce=req.body.isReduce 
+          
+            let quantity;
+            if(isReduce){
+
+                 quantity=req.body.quantity-1
+                 console.log("true")
+            }else{
+                quantity=req.body.quantity
+                console.log("false")
+            }
             const id=req.params.id 
+           
             const query={_id:ObjectId(id)}
             const update={$set:{quantity:quantity}}
             const cursor=await  inventoryCollection.updateOne(query,update)
