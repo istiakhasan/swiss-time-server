@@ -68,6 +68,16 @@ const run=async()=>{
             const update={$set:{quantity:quantity}}
             const cursor=await  inventoryCollection.updateOne(query,update)
             res.send(cursor)
+        });
+        //get items by email
+        app.get('/myitems',async(req,res)=>{
+             
+             const email=req.query.email
+             const query={email:email}
+             const cursor=inventoryCollection.find(query)
+             const myitems=await cursor.toArray()
+             res.send(myitems) 
+
         })
       }finally{
 
