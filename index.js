@@ -37,6 +37,12 @@ const run=async()=>{
             const inventoryItem=await inventoryCollection.findOne(query)
             res.send(inventoryItem)
         });
+        app.post('/inventory',async(req,res)=>{
+            const newItem=req.body 
+            const result=await inventoryCollection.insertOne(newItem)
+            res.send(result)
+            
+        })
         app.patch('/inventory/:id',async(req,res)=>{
             const isReduce=req.body.isReduce 
           
