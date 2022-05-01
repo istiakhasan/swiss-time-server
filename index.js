@@ -43,6 +43,13 @@ const run=async()=>{
             res.send(result)
             
         })
+        app.delete('/inventory/:id',async(req,res)=>{
+            const id=req.params.id 
+            const query={_id:ObjectId(id)}
+            const deleteItem=await inventoryCollection.deleteOne(query)
+            res.send(deleteItem)
+
+        })
         app.patch('/inventory/:id',async(req,res)=>{
             const isReduce=req.body.isReduce 
           
