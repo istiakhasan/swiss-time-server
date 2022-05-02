@@ -1,6 +1,7 @@
 const express=require('express')
 const app=express()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const cors=require('cors')
 app.use(cors())
@@ -11,6 +12,21 @@ const port=process.env.PORT || 4000
 app.get('/',(req,res)=>{
     res.send('Swiss time server start successfully')
 })
+
+const verifyJotToken=(req,res,next)=>{
+    const authHeader=req.headers.authorization; 
+    if(!authHeader){
+        return res.status(401).send({message:'Unauthorized User'})
+    }
+    const token=authHeader.split(' ')[1]
+    jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+        if(err){
+            return res.status(403).send({message:"Forbidden access"})
+        }
+        req.decoded=decoded
+        next()
+    })
+}
 
 
 //mongodb connection
@@ -24,7 +40,15 @@ const run=async()=>{
         await client.connect();
         const inventoryCollection= client.db('swisstimedb').collection('inventoryes');
 
-
+         //authentication
+         app.post('/login',async(req,res)=>{
+             const user=req.body 
+             console.log(user)
+             const accessToken=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
+                 expiresIn:'1d'
+             })
+             res.send({accessToken})
+         })
         app.get('/inventory',async(req,res)=>{
             const query={}
             const cursor=inventoryCollection.find(query)
@@ -70,15 +94,22 @@ const run=async()=>{
             res.send(cursor)
         });
         //get items by email
-        app.get('/myitems',async(req,res)=>{
+        app.get('/myitems',verifyJotToken,async(req,res)=>{
              
              const email=req.query.email
              const query={email:email}
-             const cursor=inventoryCollection.find(query)
-             const myitems=await cursor.toArray()
-             res.send(myitems) 
+             const decodedEmail=req.decoded.email 
+             if(email===decodedEmail){
+
+                 const cursor=inventoryCollection.find(query)
+                 const myitems=await cursor.toArray()
+                 res.send(myitems) 
+                }else{
+                    res.send(403).send({message:'Forbidded access'})
+                }
 
         })
+        //
       }finally{
 
       }
