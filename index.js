@@ -22,6 +22,7 @@ const verifyJotToken=(req,res,next)=>{
     jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
         if(err){
             return res.status(403).send({message:"Forbidden access"})
+            
         }
         req.decoded=decoded
         next()
@@ -39,11 +40,12 @@ const run=async()=>{
       try{
         await client.connect();
         const inventoryCollection= client.db('swisstimedb').collection('inventoryes');
+        const messageCollection= client.db('swisstimedb').collection('messages');
 
          //authentication
          app.post('/login',async(req,res)=>{
              const user=req.body 
-             console.log(user)
+           
              const accessToken=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
                  expiresIn:'1d'
              })
@@ -81,10 +83,10 @@ const run=async()=>{
             if(isReduce){
 
                  quantity=req.body.quantity-1
-                 console.log("true")
+                
             }else{
                 quantity=req.body.quantity
-                console.log("false")
+               
             }
             const id=req.params.id 
            
@@ -105,9 +107,15 @@ const run=async()=>{
                  const myitems=await cursor.toArray()
                  res.send(myitems) 
                 }else{
-                    res.send(403).send({message:'Forbidded access'})
+                    res.status(403).send({message:'Forbidded access'})
                 }
 
+        })
+
+        app.post('/sendmessage',async(req,res)=>{
+            const message=req.body 
+            const result= await messageCollection.insertOne(message)
+            res.send(result)
         })
         //
       }finally{
