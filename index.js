@@ -19,8 +19,11 @@ const verifyJotToken=(req,res,next)=>{
         return res.status(401).send({message:'Unauthorized User'})
     }
     const token=authHeader.split(' ')[1]
+ 
     jwt.verify(token,process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
+        
         if(err){
+         
             return res.status(403).send({message:"Forbidden access"})
             
         }
@@ -45,7 +48,7 @@ const run=async()=>{
          //authentication
          app.post('/login',async(req,res)=>{
              const user=req.body 
-           
+            
              const accessToken=jwt.sign(user,process.env.ACCESS_TOKEN_SECRET,{
                  expiresIn:'1d'
              })
@@ -110,6 +113,13 @@ const run=async()=>{
                     res.status(403).send({message:'Forbidded access'})
                 }
 
+        })
+        //get items by status
+        app.get('/new',async(req,res)=>{
+            const query={status:"new"}
+            const cursor=inventoryCollection.find(query)
+            const result=await cursor.toArray()
+            res.send(result)
         })
 
         app.post('/sendmessage',async(req,res)=>{
