@@ -57,8 +57,20 @@ const run=async()=>{
         app.get('/inventory',async(req,res)=>{
             const query={}
             const cursor=inventoryCollection.find(query)
-            const inventoryItems=await cursor.toArray();
+            const page=req.query.page
+            let inventoryItems;
+            if(page){
+                inventoryItems=await cursor.skip(page*10).limit(10).toArray()
+            }else{
+
+                inventoryItems=await cursor.toArray();
+            }
             res.send(inventoryItems)
+        })
+        //for pagenation 
+        app.get('/inventoryproductcount',async(req,res)=>{
+          const count=await  inventoryCollection.estimatedDocumentCount();
+          res.send({count})
         })
         app.get('/inventory/:id',async(req,res)=>{
             const id=req.params.id 
